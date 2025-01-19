@@ -1,39 +1,47 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { Link, useNavigation } from '@react-navigation/native'; // Import useNavigation
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Ico from 'react-native-vector-icons/FontAwesome';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
+export default function HomeStack() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack initialRouteName="index" screenOptions={{
+      headerStyle: { backgroundColor: 'tomato' },
+      headerTintColor: '#000',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+    }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="forgotpassword" options={{
+        title: 'Forgot Password',
+        headerTintColor: '#000',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerStyle: { backgroundColor: '#fff' }
+      }} />
+
+      <Stack.Screen name="createaccount" options={{ title: 'Create Account', headerStyle: { backgroundColor: '#fff' } }} />
+
+    </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  customButton: {
+    backgroundColor: 'tomato',  // Red background color
+    paddingVertical: 6,     // Vertical padding
+    paddingHorizontal: 20,   // Horizontal padding
+    borderRadius: 8,
+    marginRight: 45,       // Border radius for rounded corners
+  },
+  buttonText: {
+    color: 'black',          // White text color
+    fontSize: 16,            // Font size
+    fontWeight: 'bold',      // Bold text
+  },
+});
