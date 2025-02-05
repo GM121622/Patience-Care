@@ -56,9 +56,6 @@ const CreateAccountPage = () => {
         resizeMode="contain" // Ensure the image scales appropriately
       />
 
-      {/* Title */}
-      <Text style={styles.title}>Thriftes</Text>
-
       {/* Name Input */}
       <TextInput
         style={styles.input}

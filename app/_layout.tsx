@@ -26,6 +26,8 @@ export default function HomeStack() {
       }} />
 
       <Stack.Screen name="createaccount" options={{ title: 'Create Account', headerStyle: { backgroundColor: '#fff' } }} />
+      <Stack.Screen name="otpvarification" options={{ title: 'Verify OTP', headerStyle: { backgroundColor: '#fff' } }} />
+
 
     </Stack>
   );
