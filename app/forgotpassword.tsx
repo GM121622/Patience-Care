@@ -14,7 +14,7 @@ const ForgetPasswordScreen = () => {
       return;
     }
     else{
-            navigation.navigate('otpvarification');
+            navigation.navigate('otpvarification', {from: 'forgotPassword' });
     }
 
     console.log('Mobile Number:', mobileNumber);
