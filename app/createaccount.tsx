@@ -12,7 +12,7 @@ const CreateAccountPage = () => {
   const navigation = useNavigation<CreateAccountScreenNavigationProp>(); // Enables navigation
 
   const validateForm = () => {
-    // Name validation (ensure it's a non-empty string)
+    // Name validation (ensure it's a non-empty string value)
     if (name == 'string') {
       Alert.alert('Validation Error', 'Please enter a valid name');
       return false;
