@@ -43,7 +43,7 @@ const CreateAccountPage = () => {
   const handleCreateAccount = () => {
     if (validateForm()) {
       // Proceed to OTP verification
-      navigation.navigate('otpvarification');
+      navigation.navigate('otpvarification', {from: 'createaccount' });
     }
   };
 

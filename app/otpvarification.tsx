@@ -1,25 +1,25 @@
 import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, BackHandler } from 'react-native';
 import { OtpVarificationScreenNavigationProp } from '../types/navigation';
 
 const OTPVerificationScreen = () => {
   const [otp, setOtp] = useState<string[]>(['', '', '', '']);
-  const navigation = useNavigation<OtpVarificationScreenNavigationProp>(); // Correctly typed navigation
-  const inputs = useRef<TextInput[]>([]); 
+  const navigation = useNavigation<OtpVarificationScreenNavigationProp>();
+  const inputs = useRef<TextInput[]>([]);
+  const route = useRoute<OTPVerificationScreenRouteProp>();
+  
 
-  // Handling back button press
+  // Handle back button press
   const handleBackPress = useCallback(() => {
-    navigation.goBack();  // Go back to the previous screen
-    return true; // Prevent default behavior (which is to exit the app on back press)
+    navigation.goBack();
+    return true;
   }, [navigation]);
 
-  // Use layout effect to handle back button behavior on component mount
   useLayoutEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackPress); // Clean up the event listener
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
     };
   }, [handleBackPress]);
 
@@ -28,7 +28,6 @@ const OTPVerificationScreen = () => {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Move to the next input field if current value is filled
     if (value && index < 3) {
       inputs.current[index + 1]?.focus();
     }
@@ -37,23 +36,27 @@ const OTPVerificationScreen = () => {
   const handleVerifyOTP = () => {
     const enteredOTP = otp.join('');
     console.log('Entered OTP:', enteredOTP);
-    if (enteredOTP === '1234') { 
-      navigation.navigate('index');
+
+    if (enteredOTP === '1234') {
+      if (route.params?.from === 'forgotPassword') {
+        navigation.replace('resetpassword');
+      } else if (route.params?.from === 'createaccount') {
+        navigation.replace('index');
+      }
     } else {
-      console.log('Incorrect OTP'); 
+      console.log('Incorrect OTP');
       Alert.alert('Incorrect OTP', 'Please enter the correct OTP.');
     }
   };
 
-  // Handle Resend OTP button click
   const handleResendOTP = () => {
-    alert( 'OTP Resent,A new OTP has been sent to your registered mobile number.')
+    alert('OTP Resent, A new OTP has been sent to your registered mobile number.');
   };
 
   return (
     <View style={styles.container}>
-      <Image 
-        source={require('../assets/images/applogo.png')}  // replace with your shopping-related image
+      <Image
+        source={require('../assets/images/applogo.png')}
         style={styles.shoppingImage}
       />
       <Text style={styles.subtitle}>Verify your mobile number</Text>
@@ -63,14 +66,13 @@ const OTPVerificationScreen = () => {
         {otp.map((digit, index) => (
           <TextInput
             key={index}
-            ref={(el) => (inputs.current[index] = el!)} // Store the input reference
+            ref={(el) => (inputs.current[index] = el!)}
             style={styles.otpInput}
             keyboardType="numeric"
             maxLength={1}
             value={digit}
-            onChangeText={(value) => handleInputChange(value, index)} // Explicitly define the type of 'value'
+            onChangeText={(value) => handleInputChange(value, index)}
             onKeyPress={(e) => {
-              // Focus on the previous input field when the backspace key is pressed
               if (e.nativeEvent.key === 'Backspace' && !digit && index > 0) {
                 inputs.current[index - 1]?.focus();
               }
@@ -100,11 +102,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 10,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
   subtitle: {
     fontSize: 18,
     color: '#555',
@@ -112,9 +109,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   shoppingImage: {
-    width: '60%', // Adjust width to fit the container
-    height: 250, // Set a fixed height for the image (adjust based on your needs)
-    marginBottom: -15, // Add margin for spacing
+    width: '60%',
+    height: 250,
+    marginBottom: -15,
   },
   instructions: {
     fontSize: 14,
@@ -123,8 +120,8 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',  // Ensures even space between OTP inputs
-    width: '60%',  // Controls the width of OTP input container
+    justifyContent: 'space-evenly',
+    width: '60%',
     marginBottom: 20,
   },
   otpInput: {
