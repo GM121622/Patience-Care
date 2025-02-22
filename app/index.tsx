@@ -1,45 +1,77 @@
-import React, { useState, useEffect } from 'react'; // useEffect instead of useLayoutEffect
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image,Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Link } from 'expo-router';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Importing FontAwesome for the eye icon
 import { loginScreenNavigationProp } from '../types/navigation';
-
-
+import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios'; // Import axios for making API requests
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage to store the JWT token securely
 
 const LoginScreen = () => {
-
   const navigation = useNavigation<loginScreenNavigationProp>();
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [username, setUsername] = useState(''); // Mobile number
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); // To handle error messages if login fails
 
   const navigateToCreateAccount = () => {
-    navigation.navigate('createaccount');  // Navigate to Create Account page
+    navigation.navigate('createaccount');
   };
 
   const navigateToForgotPassword = () => {
-    navigation.navigate('forgotpassword');  // Navigate to Create Account page
+    navigation.navigate('forgotpassword');
+  };
+
+  // Handle login
+  const handleLogin = async () => {
+    try {
+      // API request to backend to authenticate the user
+      const response = await axios.post('http://localhost:8082/auth/login', {
+        username,
+        password,
+      });
+
+      // Check if token is received
+      if (response.data && response.data.trim() !== "") {
+        // Store the JWT token securely
+        await AsyncStorage.setItem('jwtToken', response.data.token);
+
+        // Redirect to home screen or wherever you need to go
+        navigation.navigate('home');
+      } else {
+        setError('Invalid credentials, please try again.');
+      }
+    } catch (err) {
+      setError('Error logging in. Please check your credentials.');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Image 
-        source={require('../assets/images/applogo.png')}  // replace with your shopping-related image
+      <Image
+        source={require('../assets/images/applogo.png')}
         style={styles.shoppingImage}
       />
-      
+
       <Text style={styles.subHeader}>Welcome back!</Text>
 
+      {/* Username input (mobile number) */}
       <TextInput
         style={styles.input}
         placeholder="Enter mobile number"
         keyboardType="phone-pad"
         placeholderTextColor="#aaa"
+        value={username}
+        onChangeText={setUsername}
       />
+
+      {/* Password input */}
       <TextInput
         style={styles.input}
         placeholder="Enter Password"
         secureTextEntry={!passwordVisible}
         placeholderTextColor="#aaa"
+        value={password}
+        onChangeText={setPassword}
       />
 
       {/* Show Password Row */}
@@ -49,10 +81,10 @@ const LoginScreen = () => {
           onPress={() => setPasswordVisible(!passwordVisible)}
         >
           {/* Display eye icon based on password visibility */}
-          <Icon 
-            name={passwordVisible ? 'eye-slash' : 'eye'} 
-            size={20} 
-            color={passwordVisible ? '#007bff' : '#aaa'} 
+          <Icon
+            name={passwordVisible ? 'eye-slash' : 'eye'}
+            size={20}
+            color={passwordVisible ? '#007bff' : '#aaa'}
           />
         </TouchableOpacity>
         <Text style={styles.showPasswordText}>Show Password</Text>
@@ -61,16 +93,21 @@ const LoginScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-      style={styles.loginButton}
-      onPress={() => navigation.navigate('home')}>
-      <Text style={styles.loginButtonText}>Login</Text>
-    </TouchableOpacity>
+      {/* Error message */}
+      {error && <Text style={styles.errorText}>{error}</Text>}
+
+      {/* Login button */}
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginButtonText}>Login</Text>
+      </TouchableOpacity>
 
       {/* Create Account Section */}
       <View style={styles.createAccountContainer}>
         <TouchableOpacity onPress={navigateToCreateAccount}>
-          <Text>Not yet registered ? <Text style={styles.createAccountText}>Create Account</Text></Text>
+          <Text>
+          <Text>Not yet registered?{' '}</Text>
+            <Text style={styles.createAccountText}>Create Account</Text>
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -86,16 +123,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start', // Align content from the top
   },
   shoppingImage: {
-    width: '70%',  // Ensure the image takes up the full width of the container
-    height: 250, // Set a fixed height for the image (adjust based on your needs)
-    marginTop: 30, // Space above the image
-    marginBottom:10, // Space below the image
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    marginTop: -30, // Adjust app name position higher
+    width: '70%',
+    height: 250,
+    marginTop: 30,
+    marginBottom: 10,
   },
   subHeader: {
     fontSize: 14,
@@ -155,19 +186,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 10,
   },
-  noAccountText: {
-    fontSize: 14,
-    color: '#555',
-  },
   createAccountText: {
     fontSize: 14,
     color: '#007bff',
     fontWeight: '600',
   },
-  textSize: {
+  errorText: {
+    color: 'red',
     fontSize: 14,
-    fontWeight: 'bold',
-  }
+    marginBottom: 10,
+  },
 });
 
 export default LoginScreen;
