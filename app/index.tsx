@@ -25,17 +25,15 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     try {
       // API request to backend to authenticate the user
-      const response = await axios.post('http://localhost:8082/auth/login', {
+      const response = await axios.post('http://192.168.1.2:8082/auth/login', {
         username,
         password,
       });
 
       // Check if token is received
       if (response.data && response.data.trim() !== "") {
-        // Store the JWT token securely
-        await AsyncStorage.setItem('jwtToken', response.data.token);
-
-        // Redirect to home screen or wherever you need to go
+        console.log(response.data);
+        await AsyncStorage.setItem('jwtToken', response.data);
         navigation.navigate('home');
       } else {
         setError('Invalid credentials, please try again.');
