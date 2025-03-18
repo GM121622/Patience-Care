@@ -1,16 +1,27 @@
 import React, { useState, useLayoutEffect, useRef, useCallback } from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, RouteProp, useRoute } from '@react-navigation/native';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, BackHandler } from 'react-native';
 import { OtpVarificationScreenNavigationProp } from '../types/navigation';
+import axios from 'axios'; // Import axios for making API requests
+import { API_URL} from "./constants";
+
+
+// Define type for route params
+type OTPVerificationScreenParams = {
+  firstName: string;
+  username: string;
+  password: string;
+  role: string;
+  from: string;
+};
 
 const OTPVerificationScreen = () => {
+  const route = useRoute<RouteProp<{ params: OTPVerificationScreenParams }, 'params'>>();
+  const { firstName, username, password, role, from } = route.params; // ✅ Type-safe access
   const [otp, setOtp] = useState<string[]>(['', '', '', '']);
   const navigation = useNavigation<OtpVarificationScreenNavigationProp>();
   const inputs = useRef<TextInput[]>([]);
-  const route = useRoute<OTPVerificationScreenRouteProp>();
-  
 
-  // Handle back button press
   const handleBackPress = useCallback(() => {
     navigation.goBack();
     return true;
@@ -33,32 +44,45 @@ const OTPVerificationScreen = () => {
     }
   };
 
-  const handleVerifyOTP = () => {
+  const handleVerifyOTP = async () => {
     const enteredOTP = otp.join('');
     console.log('Entered OTP:', enteredOTP);
-
-    if (enteredOTP === '1234') {
-      if (route.params?.from === 'forgotPassword') {
-        navigation.replace('resetpassword');
-      } else if (route.params?.from === 'createaccount') {
-        navigation.replace('index');
+  
+    try {
+      const response = await axios.post(`${API_URL}/auth/verify/otpNumber`, {
+        otpNumber: enteredOTP, // Match the field name expected by the backend
+        firstName,
+        username,
+        password,
+        role,
+    }, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+  
+      const data = await response.data;
+      console.log('API Response:', data);
+  
+      if (response.status === 200) {
+        if (from === 'forgotPassword') {
+          navigation.replace('resetpassword',{username});
+        } else if (from === 'createaccount') {
+          Alert.alert('Success', 'OTP verified successfully');
+          navigation.replace('index', { firstName, username, password, role });
+        }
+      } else {
+        Alert.alert('Verification Failed', data.message || 'Invalid OTP');
       }
-    } else {
-      console.log('Incorrect OTP');
-      Alert.alert('Incorrect OTP', 'Please enter the correct OTP.');
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     }
-  };
-
-  const handleResendOTP = () => {
-    alert('OTP Resent, A new OTP has been sent to your registered mobile number.');
   };
 
   return (
     <View style={styles.container}>
-      <Image
-        source={require('../assets/images/applogo.png')}
-        style={styles.shoppingImage}
-      />
+      <Image source={require('../assets/images/applogo.png')} style={styles.shoppingImage} />
       <Text style={styles.subtitle}>Verify your mobile number</Text>
       <Text style={styles.instructions}>Enter your OTP code here</Text>
 
@@ -86,8 +110,8 @@ const OTPVerificationScreen = () => {
       </TouchableOpacity>
 
       <Text style={styles.resendText}>
-        don't receive any OTP?{' '}
-        <Text style={styles.resendLink} onPress={handleResendOTP}>
+        Don't receive any OTP?{' '}
+        <Text style={styles.resendLink} onPress={() => console.log('Resend OTP')}>
           Resend OTP
         </Text>
       </Text>

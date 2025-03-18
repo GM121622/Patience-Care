@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView } from 'react-native';
+import axios from 'axios';
 import { ResetpasswordScreenNavigationProp } from '../types/navigation';
+import { API_URL } from "./constants";
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation<ResetpasswordScreenNavigationProp>();
+  const route = useRoute();
+  const { username } = route.params as { username: string };  // Get username (mobileNumber) from navigation params
 
   const validateForm = () => {
     if (password.length < 6) {
@@ -20,10 +24,26 @@ const ResetPasswordPage = () => {
     return true;
   };
 
-  const handleResetPassword = () => {
-    if (validateForm()) {
-    Alert.alert('Success', 'Password reset successfully');
-    navigation.navigate('index');
+  const handleResetPassword = async () => {
+    if (!validateForm()) return;
+
+    try {
+      const response = await axios.post(`${API_URL}/auth/update/password`, null, {
+        params: {
+          mobileNumber: username,  // Send mobileNumber
+          password: password       // Send new password
+        },
+      });
+
+      if (response.status === 200) {
+        Alert.alert('Success', 'Password reset successfully');
+        navigation.navigate('index');
+      } else {
+        Alert.alert('Error', 'Failed to reset password');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong');
+      console.error('Reset Password Error:', error);
     }
   };
 
@@ -37,7 +57,7 @@ const ResetPasswordPage = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Enter your password"
+        placeholder="Enter your new password"
         placeholderTextColor="#a9a9a9"
         secureTextEntry
         value={password}
@@ -46,7 +66,7 @@ const ResetPasswordPage = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Re-enter your password"
+        placeholder="Re-enter your new password"
         placeholderTextColor="#a9a9a9"
         secureTextEntry
         value={confirmPassword}

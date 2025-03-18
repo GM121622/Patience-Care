@@ -2,28 +2,25 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; // Correct import
-import { CreateAccountScreenNavigationProp } from '../types/navigation';
-import axios from 'axios'; // Import axios for making API requests
-import { API_URL} from "./constants";
-
+import { CreateAccountScreenNavigationProp } from '../../types/navigation';
 
 const CreateAccountPage = () => {
-  const [firstName, setFirstName] = useState('');
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation<CreateAccountScreenNavigationProp>(); // Enables navigation
 
   const validateForm = () => {
-    // Name validation (ensure it's a non-empty string value)
-    if (firstName === '') {
+    // Name validation (ensure it's a non-empty string)
+    if (name !== 'string') {
       Alert.alert('Validation Error', 'Please enter a valid name');
       return false;
     }
 
     // Mobile number validation (ensure it's a valid 10-digit number starting with 7, 8, or 9)
     const mobileRegex = /^[1-9][0-9]{9}$/;
-    if (!mobileRegex.test(username)) {
+    if (!mobileRegex.test(mobile)) {
       Alert.alert('Validation Error', 'Please enter a valid 10-digit mobile number');
       return false;
     }
@@ -36,44 +33,17 @@ const CreateAccountPage = () => {
 
     // Password validation (ensure password is at least 6 characters long)
     if (password.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 digits long');
+      Alert.alert('Validation Error', 'Password must be at least 6 characters long');
       return false;
     }
 
     return true;
   };
 
-  const handleCreateAccount = async () => {
+  const handleCreateAccount = () => {
     if (validateForm()) {
-      try {
-        // Make an API call to create the account
-        console.log(API_URL); // Should print: "http://192.168.43.253:8082"
-        const response = await axios.post(`${API_URL}/auth/create/account`, {
-          firstName,
-          username,
-          password,
-          role,
-        });
-
-        // Handle successful response
-        if (response.data.data===username) {
-          Alert.alert('Success', 'OTP send to your mobile number.');
-          // Proceed to OTP verification
-          navigation.navigate('otpvarification', {
-            from: 'createaccount',
-            firstName,
-            username,
-            password,
-            role,
-          });
-        } else {
-          Alert.alert('Error', 'Account creation failed');
-        }
-      } catch (error) {
-        // Handle error
-        Alert.alert('Error', 'An error occurred while creating your account');
-        console.error(error);
-      }
+      // Proceed to OTP verification
+      navigation.navigate('otpvarification');
     }
   };
 
@@ -81,18 +51,21 @@ const CreateAccountPage = () => {
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       {/* Shopping Image */}
       <Image
-        source={require('../assets/images/applogo.png')}  // Replace with your shopping-related image
+        source={require('../../assets/images/applogo.png')}  // Replace with your shopping-related image
         style={styles.shoppingImage}
         resizeMode="contain" // Ensure the image scales appropriately
       />
+
+      {/* Title */}
+      <Text style={styles.title}>Thriftes</Text>
 
       {/* Name Input */}
       <TextInput
         style={styles.input}
         placeholder="Enter your name"
         placeholderTextColor="#a9a9a9"
-        value={firstName}
-        onChangeText={setFirstName}
+        value={name}
+        onChangeText={setName}
       />
 
       {/* Mobile Input */}
@@ -101,8 +74,8 @@ const CreateAccountPage = () => {
         placeholder="Enter mobile number"
         placeholderTextColor="#a9a9a9"
         keyboardType="phone-pad"
-        value={username}
-        onChangeText={setUsername}
+        value={mobile}
+        onChangeText={setMobile}
         maxLength={10} // Ensure only 10 digits are entered
       />
 
@@ -114,8 +87,8 @@ const CreateAccountPage = () => {
           style={styles.picker}
         >
           <Picker.Item label="Select your role" value="" />
-          <Picker.Item label="Patient" value="Patient" />
-          <Picker.Item label="Doctor" value="Doctor" />
+          <Picker.Item label="Buy" value="buy" />
+          <Picker.Item label="Shop" value="shop" />
         </Picker>
       </View>
 

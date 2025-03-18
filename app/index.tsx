@@ -5,6 +5,7 @@ import { loginScreenNavigationProp } from '../types/navigation';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios'; // Import axios for making API requests
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage to store the JWT token securely
+import { API_URL} from "./constants";
 
 const LoginScreen = () => {
   const navigation = useNavigation<loginScreenNavigationProp>();
@@ -25,7 +26,7 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     try {
       // API request to backend to authenticate the user
-      const response = await axios.post('http://192.168.1.2:8082/auth/login', {
+      const response = await axios.post(`${API_URL}/auth/login`, {
         username,
         password,
       });

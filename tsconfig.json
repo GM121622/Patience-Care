@@ -1,17 +1,25 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
-      ]
-    }
+      ],
+      "./*": ["./HeaderComponent/*"]
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "types/**/*.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

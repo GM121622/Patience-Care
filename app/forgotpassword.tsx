@@ -2,45 +2,57 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { forgotPasswordScreenNavigationProp } from '../types/navigation';
+import { API_URL } from "./constants";
+import axios from 'axios';
 
 const ForgetPasswordScreen = () => {
   const [mobileNumber, setMobileNumber] = useState<string>(''); // Mobile number state
   const navigation = useNavigation<forgotPasswordScreenNavigationProp>(); // Correctly typed navigation
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     // Validate the mobile number before proceeding
     if (!validateMobileNumber(mobileNumber)) {
       Alert.alert('Invalid Number', 'Please enter a valid 10-digit mobile number');
       return;
     }
-    else{
-            navigation.navigate('otpvarification', {from: 'forgotPassword' });
-    }
 
-    console.log('Mobile Number:', mobileNumber);
-    // Add logic for sending OTP
-    Alert.alert(`OTP sent to: ${mobileNumber}`);
+    try {
+      // Send OTP to the backend
+      const response = await axios.post(`${API_URL}/auth/send/otpNumber`, null, {
+        params: {
+            mobileNumber: mobileNumber,
+        },
+    });
+
+      if (response.data.responseStatus === 'Success') {
+        // Navigate to OTP verification screen
+        navigation.navigate('otpvarification', { 
+          username: mobileNumber,
+          from: 'forgotPassword' 
+        });
+      } else {
+        Alert.alert('Error', 'Failed to send OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      Alert.alert('Error', 'An error occurred while sending OTP. Please try again.');
+    }
   };
 
   // Mobile number validation function
   const validateMobileNumber = (number: string): boolean => {
-    // Remove spaces and ensure that the number contains only digits
-    const cleanNumber = number.replace(/\s+/g, ''); // Remove any spaces
-    const regex = /^[1-9][0-9]{9}$/; // Number must start with 7, 8, or 9 and be 10 digits
-
-    // Validate that the number is exactly 10 digits and starts with a valid digit
+    const cleanNumber = number.replace(/\s+/g, '');
+    const regex = /^[1-9][0-9]{9}$/;
     return regex.test(cleanNumber);
   };
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <Image 
-        source={require('../assets/images/applogo.png')}  // replace with your shopping-related image
+        source={require('../assets/images/applogo.png')}
         style={styles.shoppingImage}
       />
 
-      {/* Mobile Input */}
       <TextInput
         style={styles.input}
         placeholder="Enter your registered mobile number"
@@ -48,10 +60,9 @@ const ForgetPasswordScreen = () => {
         keyboardType="phone-pad"
         value={mobileNumber}
         onChangeText={(text) => setMobileNumber(text)}
-        maxLength={10} // Limit input to 10 digits for the mobile number
+        maxLength={10}
       />
 
-      {/* Send OTP Button */}
       <TouchableOpacity
         style={styles.button}
         onPress={handleSendOTP}>
@@ -66,52 +77,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 20,
-    alignItems: 'center', // Align content horizontally
+    alignItems: 'center',
   },
   shoppingImage: {
-    width: '70%', // Adjust width to fit the container
-    height: 250, // Set a fixed height for the image (adjust based on your needs)
-    marginBottom: 15, // Add margin for spacing
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#000',
-    textAlign: 'center',
-    marginBottom: 20, // Added margin to space out the title and input fields
+    width: '70%',
+    height: 250,
+    marginBottom: 15,
   },
   input: {
     height: 50,
-    width: '100%', // Make input take up full width of container
+    width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 20, // Spacing between input and button
-    fontSize: 16, // Adjust font size for better visibility
+    marginBottom: 20,
+    fontSize: 16,
   },
   button: {
-    backgroundColor: '#32CD32', // Button color
+    backgroundColor: '#32CD32',
     paddingVertical: 12,
-    paddingHorizontal: 40, // Horizontal padding for a wider button
+    paddingHorizontal: 40,
     borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 20, // Space between the button and the next elements
+    marginBottom: 20,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  backButton: {
-    flexDirection: 'row', // Align icon and text horizontally
-    alignItems: 'center',
-    marginTop: 20, // Space from other components
-  },
-  backButtonText: {
-    color: '#007BFF',
-    fontSize: 16,
-    marginLeft: 8, // Space between icon and text
   },
 });
 
